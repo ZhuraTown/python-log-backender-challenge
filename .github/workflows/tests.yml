@@ -10,10 +10,11 @@ jobs:
     env:
       PYTHONUNBUFFERED: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_NAME: "test_database"
-      DATABASE_URL: "postgres://postgres:postgres@127.0.0.1:5432/test_database"
+      DB_USER: "postgres"
+      DB_NAME: "test_database"
+      DB_PASSWORD: "123456"
+      DB_PORT: 5432
+      DB_HOST: "127.0.0.1"
       REDIS_HOST: "127.0.0.1"
       REDIS_PORT: "6379"
       CLICKHOUSE_HOST: "127.0.0.1"
@@ -27,9 +28,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: DATABASE_USER
-          POSTGRES_PASSWORD: DATABASE_PASSWORD
-          POSTGRES_DB: DATABASE_NAME
+          POSTGRES_USER: DB_USER
+          POSTGRES_PASSWORD: DB_PASSWORD
+          POSTGRES_DB: DB_NAME
         ports:
           - 127.0.0.1:5432:5432
       redis:

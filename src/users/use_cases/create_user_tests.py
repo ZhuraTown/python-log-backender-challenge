@@ -1,10 +1,7 @@
 import uuid
-from collections.abc import Generator
 from unittest.mock import ANY
 
 import pytest
-from clickhouse_connect.driver import Client
-from django.conf import settings
 from redis import Redis
 
 from core.redis_writer import get_events_from_redis
