@@ -106,11 +106,11 @@ TIME_ZONE = env("TIME_ZONE", default="Europe/Moscow")
 USE_I18N = True
 USE_TZ = True
 
-MEDIA_URL = env("MEDIA_URL")
-MEDIA_ROOT = env("MEDIA_ROOT")
+MEDIA_URL = env("MEDIA_URL", default="media/")
+MEDIA_ROOT = env("MEDIA_ROOT", default="/media/")
 
-STATIC_URL = env("STATIC_URL")
-STATIC_ROOT = env("STATIC_ROOT")
+STATIC_URL = env("STATIC_URL", default="static/")
+STATIC_ROOT = env("STATIC_ROOT", default="static/")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
