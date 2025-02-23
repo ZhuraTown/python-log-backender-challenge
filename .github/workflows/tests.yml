@@ -10,12 +10,12 @@ jobs:
     env:
       PYTHONUNBUFFERED: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      CHECKPOINTS_DB_NAME: "checkpoint"
-      DB_USER: "db_user"
-      DB_PASSWORD: "db_pwd"
-      DB_HOST: "127.0.0.1"
-      DB_PORT: "5432"
-      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/test_database"
+      POSTGRES_USER: test_pg_user
+      POSTGRES_PASSWORD: 123456
+      DATABASE_USER: test_user
+      DATABASE_PASSWORD: 123456
+      DATABASE_NAME: test_database
+      DATABASE_URL: "postgres://test_pg_user:123456@127.0.0.1:5432/test_database"
       REDIS_HOST: "127.0.0.1"
       REDIS_PORT: "6379"
       CLICKHOUSE_HOST: "127.0.0.1"
@@ -29,9 +29,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: "db_user"
-          POSTGRES_PASSWORD: "db_pwd"
-          POSTGRES_DB: "events"
+          POSTGRES_USER: POSTGRES_USER
+          POSTGRES_PASSWORD: POSTGRES_PASSWORD
+          POSTGRES_DB: DATABASE_NAME
         ports:
           - 127.0.0.1:5432:5432
       redis:
