@@ -174,8 +174,8 @@ structlog.configure(
 )
 
 SENTRY_SETTINGS = {
-    "dsn": env("SENTRY_CONFIG_DSN"),
-    "environment": env("SENTRY_CONFIG_ENVIRONMENT"),
+    "dsn": env("SENTRY_CONFIG_DSN", default=""),
+    "environment": env("SENTRY_CONFIG_ENVIRONMENT", default="local"),
 }
 
 if SENTRY_SETTINGS.get("dsn") and not DEBUG:
