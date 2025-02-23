@@ -1,0 +1,66 @@
+name: Tests
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, commit]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      CHECKPOINTS_DB_NAME: "checkpoint"
+      DB_USER: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_HOST: "127.0.0.1"
+      DB_PORT: "5432"
+      REDIS_HOST: "127.0.0.1"
+      REDIS_PORT: "6379"
+      CLICKHOUSE_HOST: "127.0.0.1"
+      CLICKHOUSE_PORT: "8123"
+      CLICKHOUSE_USER: "default"
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_SCHEMA: "default"
+      CLICKHOUSE_PROTOCOL: "http"
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: "postgres"
+          POSTGRES_PASSWORD: "postgres"
+          POSTGRES_DB: "checkpoint"
+        ports:
+          - 127.0.0.1:5432:5432
+      redis:
+        image: redis:latest
+        ports:
+          - 127.0.0.1:6379:6379
+      click_house:
+        image: clickhouse/clickhouse-server:latest
+        env:
+          CLICKHOUSE_DB: "checkpoint"
+          CLICKHOUSE_USER: "default"
+          CLICKHOUSE_PASSWORD: ""
+        ports:
+          - 127.0.0.1:8123:8123
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.12.2
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Poetry install dependencies
+        run: |
+          pip install --upgrade pip poetry==1.8.5 wheel \
+          && poetry config virtualenvs.create false \
+          && poetry install
+
+      - name: Run tests
+        run: |
+          cd src && python -m pytest

@@ -1,10 +1,12 @@
 import os
 from pathlib import Path
-
+from dotenv import load_dotenv
 import environ
+import redis
 import sentry_sdk
 import structlog
 
+load_dotenv()
 env = environ.Env(
     DEBUG=(bool, False),
 )
@@ -16,7 +18,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, "core/.env"))  # noqa: PTH118
 DEBUG = env.bool("DEBUG", default=False)
 ENVIRONMENT = env('ENVIRONMENT', default='Local')
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="secret-key")
 
 ALLOWED_HOSTS = ["*"]
 
@@ -67,7 +69,7 @@ DATABASES = {
 }
 
 CLICKHOUSE_HOST = env('CLICKHOUSE_HOST', default='clickhouse')
-CLICKHOUSE_PORT = env('CLICKHOUSE_HOST', default=8123)
+CLICKHOUSE_PORT = env('CLICKHOUSE_PORT', default=8123)
 CLICKHOUSE_USER = os.getenv('CLICKHOUSE_USER', default='')
 CLICKHOUSE_PASSWORD = os.getenv('CLICKHOUSE_PASSWORD', default='')
 CLICKHOUSE_SCHEMA = os.getenv('CLICKHOUSE_SCHEMA', default='default')
@@ -77,6 +79,8 @@ CLICKHOUSE_URI = (
     f'{CLICKHOUSE_PROTOCOL}'
 )
 CLICKHOUSE_EVENT_LOG_TABLE_NAME = 'event_log'
+CLICKHOUSE_BATCH_SIZE = 1000
+CLICKHOUSE_INTERVAL_LOGS_PUSH = 5  # minutes
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -184,3 +188,8 @@ if SENTRY_SETTINGS.get("dsn") and not DEBUG:
         ],
         default_integrations=False,
     )
+
+REDIS_HOST = env("REDIS_HOST", default="localhost", cast=str)
+REDIS_PORT = env("REDIS_PORT", default=6379, cast=int)
+EVENT_ACTIONS_QUEUE = "EVENT_ACTIONS_QUEUE"
+redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=1)
