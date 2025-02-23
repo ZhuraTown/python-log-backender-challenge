@@ -1,8 +1,9 @@
+import datetime
+import json
 import re
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
-
 import clickhouse_connect
 import structlog
 from clickhouse_connect.driver.exceptions import DatabaseError
@@ -10,6 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from core.base_model import Model
+from pydantic import BaseModel, Json, validator, model_validator
 
 logger = structlog.get_logger(__name__)
 
@@ -19,6 +21,16 @@ EVENT_LOG_COLUMNS = [
     'environment',
     'event_context',
 ]
+
+
+class EventModel(BaseModel):
+    event_type: str
+    event_date_time: datetime.datetime
+    environment: str
+    event_context: str
+
+    def convert_to_tuple(self):
+        return self.event_type, self.event_date_time, self.environment, self.event_context
 
 
 class EventLogClient:
@@ -46,11 +58,11 @@ class EventLogClient:
 
     def insert(
         self,
-        data: list[Model],
+        data: list[EventModel],
     ) -> None:
         try:
             self._client.insert(
-                data=self._convert_data(data),
+                data=[e.convert_to_tuple() for e in data],
                 column_names=EVENT_LOG_COLUMNS,
                 database=settings.CLICKHOUSE_SCHEMA,
                 table=settings.CLICKHOUSE_EVENT_LOG_TABLE_NAME,
@@ -67,18 +79,19 @@ class EventLogClient:
             logger.error('failed to execute clickhouse query', error=str(e))
             return
 
-    def _convert_data(self, data: list[Model]) -> list[tuple[Any]]:
+    @classmethod
+    def convert_data_to_model(cls, data: list[Model]) -> list[EventModel]:
         return [
-            (
-                self._to_snake_case(event.__class__.__name__),
-                timezone.now(),
-                settings.ENVIRONMENT,
-                event.model_dump_json(),
+            EventModel(
+                event_type=cls._to_snake_case(event.__class__.__name__),
+                event_date_time=timezone.now(),
+                environment=settings.ENVIRONMENT,
+                event_context=event.model_dump_json(),
             )
             for event in data
         ]
 
-    def _to_snake_case(self, event_name: str) -> str:
+    @staticmethod
+    def _to_snake_case(event_name: str) -> str:
         result = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', event_name)
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', result).lower()
-
