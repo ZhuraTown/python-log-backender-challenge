@@ -13,9 +13,29 @@ pytest_plugins = [
 ]
 
 
+def create_event_log_table(client: Client):
+    client.query(
+        """
+        CREATE TABLE IF NOT EXISTS event_log
+        (
+            `event_type` String,
+            `event_date_time` DateTime64(6),
+            `environment` String,
+            `event_context` String,
+            `metadata_version` Int32 DEFAULT 1,
+        )
+        ENGINE = MergeTree()
+        PARTITION BY toYYYYMM(event_date_time)
+        ORDER BY (event_date_time, event_type)
+        SETTINGS index_granularity = 8192
+        """
+    )
+
+
 @pytest.fixture(scope='module')
 def f_ch_client() -> Client:
     client = clickhouse_connect.get_client(host=CLICKHOUSE_HOST)
+    create_event_log_table(client)
     yield client
     client.close()
 
